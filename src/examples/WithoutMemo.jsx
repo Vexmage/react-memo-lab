@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
+import { RenderBadge } from "../components/PerfPanel"; // ← add
 
 function expensiveCalculation(items) {
-  // Simulate heavy work
   const start = performance.now();
   let junk = 0;
   for (let i = 0; i < 1_500_000; i++) junk += i % 7;
@@ -17,6 +17,7 @@ function ExpensiveChild({ items, onPing, label }) {
 
   return (
     <div style={{ border: "1px solid #ddd", padding: 12, borderRadius: 8 }}>
+      <RenderBadge label="Child (no memo)" /> {/* ← add */}
       <div><strong>{label}</strong></div>
       <div>Items: [{items.join(", ")}]</div>
       <div>Total: {total}</div>
@@ -29,13 +30,14 @@ function ExpensiveChild({ items, onPing, label }) {
 export default function WithoutMemo() {
   console.count("[NoMemo Parent] render");
 
-  // Keep a stable items reference to prove that even identical props won't stop re-renders by default
   const itemsRef = useRef([1, 2, 3]);
   const [unrelated, setUnrelated] = useState(0);
   const [bump, setBump] = useState(4);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
+      <RenderBadge label="Parent (no memo)" /> {/* ← add */}
+
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button onClick={() => setUnrelated((n) => n + 1)}>
           Re-render parent (unrelated): {unrelated}
@@ -43,8 +45,8 @@ export default function WithoutMemo() {
         <button
           onClick={() => {
             const next = bump + 1;
-            itemsRef.current = [...itemsRef.current, next]; // new array reference
-            setBump(next); // trigger re-render so child receives updated items
+            itemsRef.current = [...itemsRef.current, next];
+            setBump(next);
           }}
         >
           Change child data (append {bump + 1})
@@ -53,7 +55,6 @@ export default function WithoutMemo() {
 
       <ExpensiveChild
         items={itemsRef.current}
-        // NEW function every render → different reference each time → child re-renders
         onPing={() => console.log("[NoMemo Child] ping")}
         label="Child (no memo)"
       />

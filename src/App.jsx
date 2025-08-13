@@ -1,6 +1,7 @@
 import { useState } from "react";
 import WithoutMemo from "./examples/WithoutMemo";
 import WithMemo from "./examples/WithMemo";
+import { PerfPanel } from "./components/PerfPanel"; // ← add
 
 export default function App() {
   const [tab, setTab] = useState("without");
@@ -28,10 +29,9 @@ export default function App() {
       </div>
 
       {tab === "without" ? <WithoutMemo /> : <WithMemo />}
-      <hr style={{ margin: "20px 0" }} />
-      <small>
-        Tip: Try clicking <em>Re-render parent (unrelated)</em> and watch the child.
-      </small>
+
+      {/* Perf overlay */}
+      <PerfPanel />
     </div>
   );
 }

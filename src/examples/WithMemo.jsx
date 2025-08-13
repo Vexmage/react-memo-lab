@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import React from "react";
+import { RenderBadge } from "../components/PerfPanel"; // ← add
 
 function expensiveCalculation(items) {
   const start = performance.now();
@@ -17,6 +18,7 @@ function ChildView({ items, onPing, label }) {
 
   return (
     <div style={{ border: "1px solid #ddd", padding: 12, borderRadius: 8 }}>
+      <RenderBadge label="Child (memoized)" /> {/* ← add */}
       <div><strong>{label}</strong></div>
       <div>Items: [{items.join(", ")}]</div>
       <div>Total: {total}</div>
@@ -26,7 +28,6 @@ function ChildView({ items, onPing, label }) {
   );
 }
 
-// 1) React.memo short-circuits child renders if props are shallow-equal
 const MemoChild = React.memo(ChildView);
 
 export default function WithMemo() {
@@ -36,16 +37,15 @@ export default function WithMemo() {
   const [unrelated, setUnrelated] = useState(0);
   const [bump, setBump] = useState(4);
 
-  // 2) Keep array reference stable unless the underlying data actually changes
   const items = useMemo(() => baseRef.current, [baseRef.current]);
-
-  // 3) Keep function reference stable
   const onPing = useCallback(() => {
     console.log("[Memo Child] ping");
   }, []);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
+      <RenderBadge label="Parent (memoized)" /> {/* ← add */}
+
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button onClick={() => setUnrelated((n) => n + 1)}>
           Re-render parent (unrelated): {unrelated}
@@ -53,9 +53,8 @@ export default function WithMemo() {
         <button
           onClick={() => {
             const next = bump + 1;
-            // update the backing data AND its reference
             baseRef.current = [...baseRef.current, next];
-            setBump(next); // trigger re-render
+            setBump(next);
           }}
         >
           Change child data (append {bump + 1})
